@@ -127,18 +127,17 @@ class NaiveMCTS(object):
             result = self.playout(board.dup(), who_am_i)
             if result[0] not in results:
                 results[result[0]] = {'visited': 0, 'value': 0}
-            else:
-                results[result[0]]['visited'] += 1
-                if result[1] == board.WON_BLACK:
-                    if who_am_i == board.PLAYER_BLACK:
-                        results[result[0]]['value'] += 1
-                    else:
-                        results[result[0]]['value'] -= 1
-                elif result[1] == board.WON_WHITE:
-                    if who_am_i == board.PLAYER_WHITE:
-                        results[result[0]]['value'] += 1
-                    else:
-                        results[result[0]]['value'] -= 1
+            results[result[0]]['visited'] += 1
+            if result[1] == board.WON_BLACK:
+                if who_am_i == board.PLAYER_BLACK:
+                    results[result[0]]['value'] += 1
+                else:
+                    results[result[0]]['value'] -= 1
+            elif result[1] == board.WON_WHITE:
+                if who_am_i == board.PLAYER_WHITE:
+                    results[result[0]]['value'] += 1
+                else:
+                    results[result[0]]['value'] -= 1
 
         best_pos = sorted(results,
                           key=lambda x: results[x]['value'] / results[x]['visited'],
@@ -146,10 +145,10 @@ class NaiveMCTS(object):
         board.place_disc(best_pos)
 
     def playout(self, board: Board, who_am_i):
-        selected = None
+        first_move = None
         while board.state == board.ACTIVE:
             pos = random.choice(list(board.available_places[board.turn].keys()))
             board.place_disc(pos)
-            if selected is None:
-                selected = pos
-        return (selected, board.state)
+            if first_move is None:
+                first_move = pos
+        return (first_move, board.state)
