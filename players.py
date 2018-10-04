@@ -1,3 +1,4 @@
+import math
 import random
 
 import numpy as np
@@ -152,3 +153,88 @@ class NaiveMCTS(object):
             if first_move is None:
                 first_move = pos
         return (first_move, board.state)
+
+
+class SimpleMCTS(object):
+
+    class Node(object):
+
+        def __init__(self, who_am_i, move, board, parent):
+            self.who_am_i = who_am_i
+            self.move = move
+            self.board = board
+            self.parent = parent
+            self.num_visits = 0
+            self.value = 0
+            self.unvisited = set(board.available_places[board.turn])
+            self.children = set()
+
+        def is_fully_expanded(self):
+            return len(self.children) and len(self.unvisited) == 0
+
+        def is_terminal(self):
+            return self.board.state != self.board.ACTIVE
+
+        def pick_unvisited(self):
+            move = self.unvisited.pop()
+            dup = self.board.dup()
+            dup.place_disc(move)
+            child = SimpleMCTS.Node(self.who_am_i, move, dup, self)
+            self.children.add(child)
+            return child
+
+        def playout(self):
+            dup = self.board.dup()
+            while dup.state == dup.ACTIVE:
+                move = random.choice(list(dup.available_places[dup.turn]))
+                dup.place_disc(move)
+
+            if dup.state == dup.WON_BLACK:
+                if self.who_am_i == dup.PLAYER_BLACK:
+                    return 1
+                else:
+                    return -1
+            elif dup.state == dup.WON_WHITE:
+                if self.who_am_i == dup.PLAYER_WHITE:
+                    return 1
+                else:
+                    return -1
+            return 0
+
+        def choose_best_child(self):
+            best = sorted(self.children, key=lambda node: node.num_visits, reverse=True)[0]
+            return best.move
+
+        def choose_best_utc(self):
+            def utc(node: SimpleMCTS.Node):
+                c = 1.41421356
+                exploitation = node.value / node.num_visits
+                exploration = c * math.sqrt(
+                    math.log(node.parent.num_visits) / node.num_visits)
+                return exploitation + exploration
+
+            best = sorted(self.children, key=lambda node: utc(node), reverse=True)[0]
+            return best
+
+    def make_next_move(self, board: Board):
+        root = SimpleMCTS.Node(board.turn, None, board, None)
+        for _ in range(100):
+            leaf = self.traverse_tree(root)
+            result = leaf.playout()
+            self.backup(leaf, result)
+        pos = root.choose_best_child()
+        board.place_disc(pos)
+
+    def traverse_tree(self, node):
+        while node.is_fully_expanded():
+            node = node.choose_best_utc()
+        if node.is_terminal():
+            return node
+        else:
+            return node.pick_unvisited()
+
+    def backup(self, node, result):
+        while node is not None:
+            node.num_visits += 1
+            node.value += result
+            node = node.parent
