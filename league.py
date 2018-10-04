@@ -3,13 +3,13 @@ import itertools
 import numpy as np
 
 from board import Board, play_game
-from players import Random, Greedy, MinMax, NaiveMCTS
+from players import Random, Greedy, MinMax, NaiveMCTS, SimpleMCTS
 
 
 def main():
 
     # players = [Random, Greedy, SmartGreedy, MinMax, NaiveMCTS]
-    players = [Random, Greedy, MinMax, NaiveMCTS]
+    players = [Random, Greedy, MinMax, NaiveMCTS, SimpleMCTS]
     num_players = len(players)
     head2head = np.zeros((num_players, num_players))
 
