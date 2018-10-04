@@ -14,6 +14,7 @@ SimpleMCTS has been intoroduced. Any advantage of SimpleMCTS comparing to
 NaiveMCTS for winning ratio cannot be seen.
 
 Winning ratio @ 4x4 board:
+
 ||Random|Greedy|MinMax|NaiveMCTS|SimpleMCTS|
 |:--|:--|:--|:--|:--|:--|
 |**Random**   |0.|0.415|0.255|0.085|0.06|
